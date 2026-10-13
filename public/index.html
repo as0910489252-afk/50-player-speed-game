@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#10152b">
+<title>手速王者爭霸賽｜50人團體競賽</title>
+<style>
+:root{color-scheme:dark;--bg:#10152b;--panel:#1b2341;--line:#344064;--text:#f7f8ff;--muted:#b6c0df;--pink:#ff4d8d;--cyan:#36d9ff;--green:#38e69b;--yellow:#ffdb70}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#28315b,var(--bg) 55%);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;color:var(--text)}.wrap{max-width:1100px;margin:auto;padding:16px}.hero{text-align:center;padding:22px 8px}.hero h1{font-size:clamp(27px,5vw,45px);margin:0 0 8px}.hero p{color:var(--muted);margin:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:14px}.panel{background:#1b2341ed;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 12px 30px #0002}.panel h2{font-size:19px;margin:0 0 12px}.muted{color:var(--muted)}input,select,button{font:inherit;border-radius:12px;padding:12px;border:1px solid var(--line);width:100%;margin:5px 0;background:#111831;color:var(--text)}button{background:linear-gradient(100deg,#ff4d8d,#9a66ff);border:0;font-weight:800;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.45;cursor:not-allowed}.secondary{background:#2b365c}.success{background:linear-gradient(100deg,#00b98a,#24b9d7)}.status{padding:9px 12px;border-radius:10px;background:#101831;color:var(--yellow);margin:10px 0}.hidden{display:none!important}.big{font-size:32px;font-weight:900;text-align:center;margin:12px 0}.arena{min-height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}.tap-target{width:min(65vw,230px);height:min(65vw,230px);border-radius:50%;font-size:28px;background:radial-gradient(circle,#ff8cb6,#ff367d);box-shadow:0 0 30px #ff4d8d55}.reaction-target{width:100%;min-height:120px;background:#263252;font-size:22px}.reaction-target.ready{background:#00a875;box-shadow:0 0 25px #38e69b55}.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;width:100%}.tiles button{height:64px;font-size:24px;margin:0}.score{font-size:24px;font-weight:900;color:var(--green)}ol,ul{padding-left:24px;margin:8px 0}.board-row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #344064;align-items:center}.pill{background:#303b61;padding:3px 8px;border-radius:999px;font-size:12px}.small{font-size:13px}.qr{width:170px;height:170px;background:white;padding:5px;border-radius:8px;display:block;margin:8px auto}.admin{border:1px dashed #6878a7}.footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+</style>
+</head>
+<body><div class="wrap">
+<header class="hero"><h1>⚡ 手速王者爭霸賽</h1><p>最多 50 人・10 組各 5 人・手速、反應、準確度決勝負</p></header>
+<div class="grid">
+<section class="panel" id="joinPanel"><h2>📱 加入賽事</h2><p class="muted small">請輸入主辦人提供的房間代碼，選擇組別並填寫暱稱。</p><input id="roomCode" placeholder="房間代碼" maxlength="6"><input id="playerName" placeholder="你的暱稱（最多 16 字）" maxlength="16"><select id="teamSelect"><option value="">選擇組別</option></select><button id="joinBtn">加入比賽</button><div id="joinMsg" class="status">尚未加入</div></section>
+<section class="panel"><h2>🏁 賽事資訊</h2><div class="board-row"><span>房間代碼</span><b id="codeLabel">載入中</b></div><div id="qrCode" class="qr"></div><p class="muted small" style="text-align:center">參賽者掃描此 QR Code 即可帶入房間代碼</p><div class="board-row"><span>參賽人數</span><b id="countLabel">0 / 50</b></div><div class="board-row"><span>比賽狀態</span><b id="statusLabel">等待開始</b></div><div class="board-row"><span>目前關卡</span><b id="gameLabel">尚未開始</b></div><p class="muted small">每人 3 輪；每輪依序挑戰三種不同能力。分數即時同步到排行榜。</p></section>
+<section class="panel hidden" id="playPanel"><h2>🎮 你的競賽區</h2><div id="playerInfo" class="muted"></div><div id="playStatus" class="status">等待主辦人開始</div><div class="arena" id="arena"><p class="muted">比賽開始後，遊戲會出現在這裡。</p></div><div class="big">本關分數：<span id="myScore" class="score">0</span></div><div id="gameFeedback" class="muted small"></div></section>
+<section class="panel"><h2>🥇 個人排行榜</h2><div id="playersBoard" class="muted">尚無參賽者</div></section>
+<section class="panel"><h2>🏆 團體排行榜</h2><div id="teamsBoard" class="muted">等待參賽者加入</div></section>
+<section class="panel admin"><h2>🛠️ 主辦人控制台</h2><p class="muted small">請在主辦人電腦輸入管理密鑰。密鑰請勿分享給參賽者。</p><input id="adminToken" type="password" placeholder="ADMIN_TOKEN 管理密鑰"><button id="startBtn">開始比賽</button><button id="nextBtn" class="secondary">提早結束本關／下一關</button><button id="resetBtn" class="secondary">重設賽事（清空全部資料）</button><div id="adminMsg" class="status">未驗證管理員</div></section>
+</div><div class="footer">提示：請每位參賽者使用自己的手機與穩定網路。為公平起見，系統會限制過快的連續點擊。</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>\n<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket=io();
+const $=id=>document.getElementById(id);
+let state=null, me=null, currentGame=null, localScore=0, sequence=null, seqIndex=0, reactionArmed=false, reactionReady=false, gameEndsAt=null, timerId=null;
+const gameNames={tap:"極速點擊",react:"反應神手",sequence:"眼明手快"};
+for(let i=1;i<=10;i++){const o=document.createElement("option");o.value=i;o.textContent=`第 ${i} 組`; $("teamSelect").appendChild(o);}
+const params=new URLSearchParams(location.search);
+if(params.get("code")) $("roomCode").value=params.get("code").toUpperCase();
+function msg(id,text){$(id).textContent=text;}
+function api(path,method="POST"){return fetch(path,{method,headers:{"Content-Type":"application/json","x-admin-token":$("adminToken").value},body:method==="POST"?"{}":undefined}).then(async r=>{const d=await r.json();if(!r.ok)throw new Error(d.error||"操作失敗");return d;});}
+function drawBoards(s){
+ $("codeLabel").textContent=s.code; $("countLabel").textContent=`${s.players.length} / 50`;
+ $("statusLabel").textContent=s.status==="lobby"?"等待開始":s.status==="playing"?"比賽進行中":"比賽已結束";
+ $("gameLabel").textContent=s.status==="playing"&&s.game?`第 ${s.round} 輪：${s.game.name}`:s.status==="finished"?"全部完成":"尚未開始";
+ $("playersBoard").innerHTML=s.players.length?s.players.map((p,i)=>`<div class="board-row"><span>${i+1}. ${escapeHtml(p.name)} <span class="pill">第 ${p.teamId} 組</span>${p.connected?"":" <span class='muted small'>(離線)</span>"}</span><b>${p.totalScore}</b></div>`).join(""):"尚無參賽者";
+ $("teamsBoard").innerHTML=s.teams.map((t,i)=>`<div class="board-row"><span>${i+1}. ${t.name} <span class="pill">${t.count}/5 人</span></span><b>${t.totalScore} 分</b></div>`).join("");
+ if(me){const p=s.players.find(p=>p.id===me.id);if(p){me=p;$("playerInfo").textContent=`${p.name}｜第 ${p.teamId} 組｜累積 ${p.totalScore} 分`;}}
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+socket.on("state",s=>{state=s;drawBoards(s);if(s.status==="finished"){msg("playStatus","賽事結束！查看排行榜。")}});
+socket.on("reset",d=>{me=null;currentGame=null;$("playPanel").classList.add("hidden");$("joinPanel").classList.remove("hidden");$("roomCode").value=d.code;msg("joinMsg","賽事已重設，請重新加入。");});
+$("joinBtn").onclick=()=>{
+ const name=$("playerName").value.trim(),teamId=Number($("teamSelect").value),code=$("roomCode").value.trim().toUpperCase();
+ socket.emit("join",{name,teamId,code},res=>{
+  if(!res||res.error){msg("joinMsg",res?.error||"加入失敗");return;}
+  me=res.player;localStorage.setItem("speedGamePlayerId",me.id);$("playPanel").classList.remove("hidden");msg("joinMsg","加入成功！等待主辦人開始。");msg("playStatus","等待主辦人開始");$("joinPanel").classList.add("hidden");
+ });
+};
+function resetArena(){ $("arena").innerHTML="";$("gameFeedback").textContent="";localScore=0;$("myScore").textContent="0";reactionArmed=false;reactionReady=false;sequence=null;seqIndex=0;}
+socket.on("game-start",data=>{
+ currentGame=data.game;gameEndsAt=data.endsAt;resetArena();
+ if(!me){msg("playStatus",`第 ${data.round} 輪：${data.game.name}。你尚未加入，請使用正確房間代碼。`);return;}
+ msg("playStatus",`第 ${data.round} 輪：${data.game.name}｜${data.game.description}`);
+ if(data.game.id==="tap")renderTap();
+ if(data.game.id==="react")renderReact();
+ if(data.game.id==="sequence")renderSequence();
+ if(timerId)clearInterval(timerId);
+ timerId=setInterval(()=>{const left=Math.max(0,Math.ceil((gameEndsAt-Date.now())/1000));$("playStatus").textContent=`第 ${data.round} 輪：${data.game.name}｜剩餘 ${left} 秒`;if(left<=0)clearInterval(timerId);},250);
+});
+socket.on("react-ready",()=>{reactionReady=true;const b=$("reactButton");if(b){b.classList.add("ready");b.textContent="現在點擊！";}});
+socket.on("game-finished",()=>{msg("playStatus","🎉 全部 3 輪完成！請查看個人與團體排行榜。")});
+function action(payload,cb){socket.emit("game-action",payload,res=>{if(res?.error){msg("gameFeedback",res.error);if(cb)cb(res);return;}if(res?.ignored)return;if(res?.score!==undefined){localScore=res.score;$("myScore").textContent=localScore;}if(cb)cb(res||{});});}
+function renderTap(){
+ $("arena").innerHTML=`<div class="muted">在本關倒數結束前，盡可能快速點擊。</div><button id="tapButton" class="tap-target">點我！</button><div>有效點擊：<b id="tapCount">0</b></div>`;
+ $("tapButton").onclick=()=>action({action:"tap"},r=>{if(r.taps!==undefined){$("tapCount").textContent=r.taps;msg("gameFeedback","持續點擊！伺服器會過濾過快的連點。");}});
+}
+function renderReact(){
+ $("arena").innerHTML=`<div class="muted">按下開始後等待目標變綠，太早點擊會失去這次機會。</div><button id="armButton" class="secondary">開始測試</button><button id="reactButton" class="reaction-target" disabled>等待目標出現</button><div id="reactResult" class="score"></div>`;
+ $("armButton").onclick=()=>{if(reactionArmed)return;reactionArmed=true;$("armButton").disabled=true;$("reactButton").disabled=false;$("reactButton").textContent="等待綠色目標…";action({action:"arm"},r=>{if(r.error){reactionArmed=false;$("armButton").disabled=false;}});};
+ $("reactButton").onclick=()=>{if(!reactionArmed)return;if(!reactionReady){action({action:"hit"},r=>{if(r.error){$("reactButton").disabled=true;$("reactButton").textContent="本次失敗";}});return;}action({action:"hit"},r=>{if(r.ms!==undefined){$("reactButton").disabled=true;$("reactButton").textContent="完成";$("reactResult").textContent=`${r.ms} 毫秒｜+${r.points} 分`;}});};
+}
+function renderSequence(){
+ $("arena").innerHTML=`<div class="muted">先按開始，記住由左至右顯示的 5 個數字，再依序點擊 1–4。</div><button id="seqStart" class="secondary">開始記憶挑戰</button><div id="sequenceDisplay" class="big">？ ？ ？ ？ ？</div><div class="tiles">${[1,2,3,4].map(n=>`<button data-value="${n}" disabled>${n}</button>`).join("")}</div><div id="seqProgress" class="muted">進度：0 / 5</div>`;
+ $("seqStart").onclick=()=>action({action:"start-sequence"},r=>{if(r.sequence){sequence=r.sequence;seqIndex=r.seqIndex||0;$("sequenceDisplay").textContent=sequence.join("  ");document.querySelectorAll(".tiles button").forEach(b=>b.disabled=false);$("seqStart").disabled=true;setTimeout(()=>{if(currentGame?.id==="sequence")$("sequenceDisplay").textContent="請依序點擊";},2500);}});
+ document.querySelectorAll(".tiles button").forEach(b=>b.onclick=()=>action({action:"sequence-tap",value:Number(b.dataset.value)},r=>{if(r.seqIndex!==undefined){seqIndex=r.seqIndex;$("seqProgress").textContent=`進度：${seqIndex} / 5`;if(r.correct===false)msg("gameFeedback","不正確，請再試一次（扣 2 分）。");else msg("gameFeedback",r.completed?"完成！本關挑戰成功。":"正確！繼續。");if(r.completed)document.querySelectorAll(".tiles button").forEach(x=>x.disabled=true);}}));
+}
+$("startBtn").onclick=async()=>{try{await api("/api/admin/start");msg("adminMsg","比賽已開始");}catch(e){msg("adminMsg",e.message);}};
+$("nextBtn").onclick=async()=>{try{await api("/api/admin/next");msg("adminMsg","已切換到下一關");}catch(e){msg("adminMsg",e.message);}};
+$("resetBtn").onclick=async()=>{if(!confirm("確定重設？這會清除所有參賽者和分數。"))return;try{const d=await api("/api/admin/reset");msg("adminMsg","賽事已重設，新代碼："+d.code);}catch(e){msg("adminMsg",e.message);}};
+fetch("/api/config").then(r=>r.json()).then(d=>{if(!$("roomCode").value)$("roomCode").value=d.code;});
+const saved=localStorage.getItem("speedGamePlayerId");
+if(saved){socket.emit("resume",{playerId:saved},res=>{if(res?.ok){me=res.player;$("playPanel").classList.remove("hidden");$("joinPanel").classList.add("hidden");msg("joinMsg","已恢復參賽紀錄");drawBoards(res.state);}});}
+</script></body></html>
